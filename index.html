@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moving Sale — Dupont Circle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fustat:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --charcoal: #1e1e1a;
+      --mid: #666;
+      --accent: #c84b2f;
+      --light-border: #ddd;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Fustat', sans-serif; background: #fafafa; color: var(--charcoal); font-size: 14px; line-height: 1.6; }
+
+    .hero { background: var(--charcoal); color: #f5f0e8; padding: 60px 40px 48px; text-align: center; }
+    .hero-label { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #aaa; margin-bottom: 14px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 700; letter-spacing: -1px; margin-bottom: 28px; }
+    .hero-meta { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; font-size: 13px; }
+    .hero-meta-item { display: flex; flex-direction: column; gap: 4px; }
+    .hero-meta-item .label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #888; }
+    .hero-meta-item .value { color: #f5f0e8; }
+    .hero-meta-item a { color: #f5f0e8; text-decoration: none; }
+    .hero-meta-item a:hover { text-decoration: underline; }
+
+    .filter-bar { background: #fff; border-bottom: 1px solid var(--light-border); padding: 14px 32px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .filter-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-right: 6px; }
+    .filter-btn { background: none; border: 1px solid var(--light-border); padding: 5px 14px; font-family: 'Fustat', sans-serif; font-size: 12px; color: var(--charcoal); cursor: pointer; transition: all 0.15s; }
+    .filter-btn:hover, .filter-btn.active { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
+
+    .grid-container { max-width: 1280px; margin: 0 auto; padding: 40px 28px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+
+    .card { background: #fff; border: 1px solid var(--light-border); overflow: hidden; transition: box-shadow 0.2s; }
+    .card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
+    .card.hidden { display: none; }
+
+    /* CAROUSEL */
+    .carousel { position: relative; aspect-ratio: 4/3; background: #f0f0f0; overflow: hidden; }
+    .carousel-track { display: flex; height: 100%; transition: transform 0.35s ease; }
+    .carousel-track img { min-width: 100%; height: 100%; object-fit: cover; flex-shrink: 0; display: block; }
+    .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: #fff; border: none; cursor: pointer; width: 32px; height: 32px; font-size: 18px; line-height: 32px; text-align: center; z-index: 10; transition: background 0.15s; font-family: 'Fustat', sans-serif; }
+    .carousel-btn:hover { background: rgba(0,0,0,0.65); }
+    .carousel-btn.prev { left: 8px; }
+    .carousel-btn.next { right: 8px; }
+    .carousel-btn.hidden, .carousel-dots.hidden { display: none; }
+    .carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: background 0.2s; }
+    .dot.active { background: #fff; }
+
+    /* CARD BODY */
+    .card-body { padding: 18px 20px 20px; }
+    .card-field { margin-bottom: 5px; font-size: 13px; line-height: 1.5; }
+    .card-field .field-label { font-weight: 700; }
+    .card-field.sale-price .field-value { color: var(--accent); font-weight: 700; font-size: 15px; }
+    .card-field a { color: var(--accent); text-decoration: none; }
+    .card-field a:hover { text-decoration: underline; }
+
+    footer { background: var(--charcoal); color: #aaa; text-align: center; padding: 40px; font-size: 13px; line-height: 2; font-family: 'Fustat', sans-serif; }
+    footer a { color: #f5f0e8; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .hero { padding: 48px 20px 36px; }
+      .filter-bar { padding: 10px 16px; }
+      .grid-container { padding: 24px 14px; }
+      .hero-meta { gap: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <p class="hero-label">Dupont Circle, Washington DC</p>
+  <h1>Moving Sale</h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="label">Pickup</span>
+      <span class="value">1301 20th ST NW, Washington DC 20036</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">Contact</span>
+      <span class="value"><a href="tel:+16282528644">Pedro &nbsp;·&nbsp; +1(628)252-8644</a></span>
+    </div>
+  </div>
+</header>
+
+<nav class="filter-bar">
+  <span class="filter-label">Filter</span>
+  <button class="filter-btn active" onclick="filter('all', this)">All</button>
+  <button class="filter-btn" onclick="filter('furniture', this)">Furniture</button>
+  <button class="filter-btn" onclick="filter('bedroom', this)">Bedroom</button>
+  <button class="filter-btn" onclick="filter('electronics', this)">Electronics</button>
+  <button class="filter-btn" onclick="filter('kitchen', this)">Kitchen</button>
+  <button class="filter-btn" onclick="filter('decor', this)">Decor &amp; Plants</button>
+  <button class="filter-btn" onclick="filter('other', this)">Other</button>
+</nav>
+
+<main class="grid-container">
+  <div class="grid" id="grid">
+
+    <!-- BOOKSHELF -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image13.jpg","images/image58.jpg","images/image28.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Bookshelf</div>
+        <div class="card-field"><span class="field-label">Model:</span> Bixby 33" Bookshelf, Walnut &amp; White (<a href="https://modway.com/products/bixby-33-bookshelf" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> W: 32.5'' D: 15.5'' H: 71''</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $345</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$250</span></div>
+      </div>
+    </div>
+
+    <!-- MEDIA CONSOLE -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image3.jpg","images/image55.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Media Console/TV Stand</div>
+        <div class="card-field"><span class="field-label">Model:</span> Transmit 70" Media Console Wood TV Stand, Walnut &amp; White (<a href="https://modway.com/products/transmit-70-media-console-wood-tv-stand" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> W: 70'' D: 15.5'' H: 16''</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $275</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$175</span></div>
+      </div>
+    </div>
+
+    <!-- SMART FIRE TV -->
+    <div class="card" data-cat="electronics">
+      <div class="carousel" data-images='["images/image56.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Smart Fire TV (x2) with Wall Mount</div>
+        <div class="card-field"><span class="field-label">Model:</span> Insignia™ 55" Class F50 Series LED 4K UHD Smart Fire TV (<a href="https://www.bestbuy.com/product/insignia-55-class-f50-series-led-4k-uhd-smart-fire-tv/J2FPJKSV76" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $179.98 each and $49.99 Wall Mount</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$115 each</span></div>
+      </div>
+    </div>
+
+    <!-- STORAGE BENCH -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image19.jpg","images/image20.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Storage Bench</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA PANGET Storage Bench, white (<a href="https://www.ikea.com/us/en/p/panget-storage-bench-white-10474159/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> W: 43 1/4" D: 16" H: 21 1/8"</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $249.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$150</span></div>
+      </div>
+    </div>
+
+    <!-- WALL MIRROR -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image30.jpg","images/image7.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Wall Mirror</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA STOCKHOLM Mirror, walnut veneer (<a href="https://www.ikea.com/us/en/p/stockholm-mirror-walnut-veneer-20503793/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> Depth: 3 7/8 " Diameter: 31 1/2 "</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $179.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$125</span></div>
+      </div>
+    </div>
+
+    <!-- DINING TABLE + CHAIRS -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image8.jpg","images/image12.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Dining Table with 4 Chairs</div>
+        <div class="card-field"><span class="field-label">Model:</span> Cassidy Dining Table from Langley Street Shop with 4 Chairs, Table (<a href="https://www.equip-bid.com/auction/5476/item/1401?offset=23" target="_blank">link</a>) and Chairs (<a href="https://www.wayfair.com/furniture/pdp/mercury-row-delfinia-upholstered-side-dining-chair-for-living-room-kitchen-dining-room-haze2468.html" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> Table: $328.99 &nbsp; Chairs: $422.50</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$250 table and $300 chairs ($500 all)</span></div>
+      </div>
+    </div>
+
+    <!-- WARDROBE -->
+    <div class="card" data-cat="bedroom">
+      <div class="carousel" data-images='["images/image43.jpg","images/image4.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Large Wardrobe with Shoe Rack</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA PAX Wardrobe combination, black-brown. Same model in a different color and dimensions: (<a href="https://www.ikea.com/us/en/p/pax-grimo-wardrobe-combination-white-white-s69560819/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> W: 39.5" D: 15" H: 79"</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $435</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$325</span></div>
+      </div>
+    </div>
+
+    <!-- NIGHTSTANDS -->
+    <div class="card" data-cat="bedroom">
+      <div class="carousel" data-images='["images/image59.jpg","images/image16.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Nightstands (x2)</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA MALM Chest of two drawers, black-brown (<a href="https://www.ikea.com/nl/en/p/malm-chest-of-2-drawers-black-brown-00103343/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> W: 40 cm D: 48cm H: 55cm - Depth of drawer (inside): 43 cm</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $49.99 each</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$30 each</span></div>
+      </div>
+    </div>
+
+    <!-- BED FRAME -->
+    <div class="card" data-cat="bedroom">
+      <div class="carousel" data-images='["images/image45.jpg","images/image32.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Platform Bed Frame</div>
+        <div class="card-field"><span class="field-label">Model:</span> Suzanne Metal and Bamboo Platform Bed Frame, Queen (<a href="https://www.zinus.com/products/suzanne-low-profile-platform-bed-frame?variant=40101246271551" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $489.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$300</span></div>
+      </div>
+    </div>
+
+    <!-- CASPER MATTRESS -->
+    <div class="card" data-cat="bedroom">
+      <div class="carousel" data-images='["images/image18.jpg","images/image1.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Mattress</div>
+        <div class="card-field"><span class="field-label">Model:</span> Casper Essential Mattress, Queen (<a href="https://casper.com/products/casper-essential?variant=41824224313425" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $477</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$300</span></div>
+      </div>
+    </div>
+
+    <!-- HEKTAR SPOTLIGHTS -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image33.jpg","images/image35.jpg","images/image22.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Wall/clamp Spotlight (x2)</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA HEKTAR, light grey (<a href="https://www.ikea.com/us/en/p/hektar-wall-clamp-spotlight-dark-gray-50216540/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> Max: 7w Max depth: 8 5/8 " Diameter: 4"</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $22.99 each</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$15 each</span></div>
+      </div>
+    </div>
+
+    <!-- TRIFOLD MATTRESS -->
+    <div class="card" data-cat="bedroom">
+      <div class="carousel" data-images='["images/image53.png"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Mattress</div>
+        <div class="card-field"><span class="field-label">Model:</span> Tri-fold Memory Foam Mattress, Queen (<a href="https://www.milliardbrands.com/collections/tri-fold-mattresses/products/6-tri-fold-memory-foam-mattress-with-cover" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $319.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$150</span></div>
+      </div>
+    </div>
+
+    <!-- SOFA + OTTOMAN -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image10.jpg","images/image51.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Sofa and Ottoman</div>
+        <div class="card-field"><span class="field-label">Model:</span> Aquarius II Light Grey Sofa and Ottoman from Living Spaces (discontinued). Similar model, same color (<a href="https://www.youtube.com/watch?v=GRC8oYjSULs" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $479.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$250</span></div>
+      </div>
+    </div>
+
+    <!-- OFFICE CHAIR -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image47.jpg","images/image5.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Office Chair</div>
+        <div class="card-field"><span class="field-label">Model:</span> Realspace® Calusa Mesh Mid-Back Manager's Office Chair, Black, BIFMA Compliant (<a href="https://www.officedepot.com/a/products/857562/Realspace-Calusa-Mesh-Mid-Back-Managers/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $179.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$115</span></div>
+      </div>
+    </div>
+
+    <!-- STANDING DESK -->
+    <div class="card" data-cat="furniture">
+      <div class="carousel" data-images='["images/image21.jpg","images/image47.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Standing Desk</div>
+        <div class="card-field"><span class="field-label">Model:</span> FEZIBO Basic Standing Desk, black walnut (<a href="https://www.fezibo.com/products/fezibo-aeris-electric-height-adjustable-standing-desk?variant1=40409615695941" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> 48in x 24 in</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $239.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$160</span></div>
+      </div>
+    </div>
+
+    <!-- NAVLINGE CLAMP LAMP -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image14.jpg","images/image49.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> LED Clamp Spotlight</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA NAVLINGE LED clamp spotlight, black (<a href="https://www.ikea.com/us/en/p/naevlinge-led-clamp-spotlight-black-30449885/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> 220 Lumen, Length: 13 ", Cord length: 6 ' 7 ", Power: 1.9 W</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $21.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$10</span></div>
+      </div>
+    </div>
+
+    <!-- ELECTRIC SCOOTER -->
+    <div class="card" data-cat="other">
+      <div class="carousel" data-images='["images/image23.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Electric Scooter with Lock and Tire Inflator</div>
+        <div class="card-field"><span class="field-label">Model:</span> Segway Ninebot Max G30P Electric Scooter with Lock and Cordless Tire Inflator (<a href="https://store.segway.com/ninebot-kickscooter-max" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $799.99 scooter, $59.99 lock and $29.99 inflator</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$450 all</span></div>
+      </div>
+    </div>
+
+    <!-- PRINTER -->
+    <div class="card" data-cat="electronics">
+      <div class="carousel" data-images='["images/image37.jpg","images/image39.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Wireless Printer</div>
+        <div class="card-field"><span class="field-label">Model:</span> EPSON EcoTank ET-2800 Wireless Color All-in-One Cartridge-Free Printer (<a href="https://epson.com/For-Work/Printers/Inkjet/EcoTank-ET-2800-Wireless-Color-All-in-One-Cartridge-Free-Supertank-Printer-with-Scan-and-Copy/p/C11CJ66202" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $179.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$100</span></div>
+      </div>
+    </div>
+
+    <!-- LARGE BAMBOO PLANT -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image41.jpg","images/image2.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Artificial Plant with Pot</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA FEJKA Artificial potted plant, indoor/outdoor bamboo (<a href="https://www.ikea.com/us/en/p/fejka-artificial-potted-plant-indoor-outdoor-bamboo-40568892/" target="_blank">link</a>) pot (<a href="https://www.ikea.com/us/en/p/persillade-plant-pot-dark-gray-10346765/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> H: 67 " Diameter of pot: 9 "</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> Plant $89.99 and Pot $29.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$75 all</span></div>
+      </div>
+    </div>
+
+    <!-- HANGING PLANTS x3 -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image15.jpg","images/image52.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Artificial Potted Plant (x3)</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA FEJKA Artificial potted plant, indoor/outdoor/hanging (<a href="https://www.ikea.com/us/en/p/fejka-artificial-potted-plant-indoor-outdoor-hanging-40349531/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> Diameter of plant pot: 3 ½ " Height of plant: 27 ½ "</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $9.99 each</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$5 each</span></div>
+      </div>
+    </div>
+
+    <!-- THYME PLANTS x3 -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image38.jpg","images/image42.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Artificial Potted Plant with Metal Pot (x3)</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA FEJKA Artificial potted plant, thyme (<a href="https://www.ikea.com/us/en/p/fejka-artificial-potted-plant-thyme-90375155/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> Diameter of plant pot: 3 ½ " Height of plant: 8 ¾ "</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $5.99 each</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$5 each</span></div>
+      </div>
+    </div>
+
+    <!-- SMALL BAMBOO x2 -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image25.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Artificial Potted Plant (x2)</div>
+        <div class="card-field"><span class="field-label">Model:</span> IKEA FEJKA Artificial potted plant, indoor/outdoor bamboo (<a href="https://www.ikea.com/us/en/p/fejka-artificial-potted-plant-indoor-outdoor-house-bamboo-60433939/" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimensions:</span> Diameter of plant pot: 3 ½ " Height of plant: 8 ¾ "</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $7.99 each</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$5 each</span></div>
+      </div>
+    </div>
+
+    <!-- CHRISTMAS TREE -->
+    <div class="card" data-cat="decor">
+      <div class="carousel" data-images='["images/image36.jpg","images/image31.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Artificial Christmas Tree</div>
+        <div class="card-field"><span class="field-label">Model:</span> 7ft. Pre-Lit Willow Pine Artificial Christmas Tree, Warm Lights by Ashland. Same model, but only 6ft (<a href="https://www.michaels.com/product/6ft-prelit-sierra-spruce-artificial-christmas-tree-warm-white-led-lights-by-ashland-10781383" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $299.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$100</span></div>
+      </div>
+    </div>
+
+    <!-- JUICER -->
+    <div class="card" data-cat="kitchen">
+      <div class="carousel" data-images='["images/image27.jpg","images/image54.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Cold Press Juicer</div>
+        <div class="card-field"><span class="field-label">Model:</span> AMZCHEF Masticating Juicer 5.8-Inch Self-Feeding Green (<a href="https://iamzchef.com/products/masticating-juicer-5-3-inch-self-feeding-green" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $359.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$100</span></div>
+      </div>
+    </div>
+
+    <!-- DINNERWARE 16pc -->
+    <div class="card" data-cat="kitchen">
+      <div class="carousel" data-images='["images/image57.jpg","images/image17.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Dinnerware Set (16 pieces, 4 each)</div>
+        <div class="card-field"><span class="field-label">Model:</span> Pfaltzgraff Hudson 16-Piece Dinnerware Set, Blue (<a href="https://www.amazon.com/dp/B082XX4CK6" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $119.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$75</span></div>
+      </div>
+    </div>
+
+    <!-- DINNERWARE 18pc -->
+    <div class="card" data-cat="kitchen">
+      <div class="carousel" data-images='["images/image50.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Dinnerware Set (18 pieces, 6 each)</div>
+        <div class="card-field"><span class="field-label">Model:</span> Amazon Basics Porcelain Dinnerware Set, Microwave and Dishwasher Safe, Service for 6, 18-Piece, Plates, Bowls, White (<a href="https://www.amazon.com/Amazon-Basics-Dinnerware-Microwave-Dishwasher/dp/B019EEUQ2O" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $40.49</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$20</span></div>
+      </div>
+    </div>
+
+    <!-- PLATE SET -->
+    <div class="card" data-cat="kitchen">
+      <div class="carousel" data-images='["images/image11.jpg","images/image26.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Plate set (8 pieces, 4 each)</div>
+        <div class="card-field"><span class="field-label">Model:</span> Crate &amp; Barrel plate set, light grey</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $109.95</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$75</span></div>
+      </div>
+    </div>
+
+    <!-- HAIR DRYER -->
+    <div class="card" data-cat="other">
+      <div class="carousel" data-images='["images/image44.jpg","images/image48.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Hair Dryer</div>
+        <div class="card-field"><span class="field-label">Model:</span> Shark FlexStyle® Air Styling &amp; Drying System (<a href="https://www.sharkninja.com/shark-flexstyle-air-styling-drying-system/HD430.html" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $349.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$150</span></div>
+      </div>
+    </div>
+
+    <!-- TRASH CAN LARGE -->
+    <div class="card" data-cat="other">
+      <div class="carousel" data-images='["images/image29.jpg","images/image34.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Trash Can</div>
+        <div class="card-field"><span class="field-label">Model:</span> Amazon Basics Trash Can (<a href="https://www.amazon.com/-/es/Amazon-Basics-rectangular-resistente-inoxidable/dp/B07PBV75T2" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Dimension:</span> 30 liters/7.9 gallons</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $57.14</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$30</span></div>
+      </div>
+    </div>
+
+    <!-- TRASH CAN SMALL -->
+    <div class="card" data-cat="other">
+      <div class="carousel" data-images='["images/image40.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Trash Can</div>
+        <div class="card-field"><span class="field-label">Model:</span> Small trash can (<a href="https://www.target.com/p/simplehuman-6l-stainless-steel-semi-round-step-trash-can-brushed-silver/-/A-78682057" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $40</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$20</span></div>
+      </div>
+    </div>
+
+    <!-- STEP LADDER -->
+    <div class="card" data-cat="other">
+      <div class="carousel" data-images='["images/image24.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Step Ladder</div>
+        <div class="card-field"><span class="field-label">Model:</span> Cosco 2 Step All Steel Step Stool: Dark Gray, 225 lb Capacity (<a href="https://www.target.com/p/cosco-2-step-all-steel-step-stool/-/A-13130247" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $27.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$15</span></div>
+      </div>
+    </div>
+
+    <!-- SHOPPING TROLLEY -->
+    <div class="card" data-cat="other">
+      <div class="carousel" data-images='["images/image6.jpg"]'></div>
+      <div class="card-body">
+        <div class="card-field"><span class="field-label">Item:</span> Shopping Trolley</div>
+        <div class="card-field"><span class="field-label">Model:</span> Trolley Dolly Black Foldable Shopping cart (<a href="https://www.amazon.com/dbest-products-Trolley-Shopping-Foldable/dp/B00NIXNULM" target="_blank">link</a>)</div>
+        <div class="card-field"><span class="field-label">Original Price:</span> $48.99</div>
+        <div class="card-field sale-price"><span class="field-label">Sale Price:</span> <span class="field-value">$20</span></div>
+      </div>
+    </div>
+
+  </div><!-- /.grid -->
+</main>
+
+<footer>
+  <p style="color:#eee; font-size:1rem; margin-bottom:8px;">Interested in something?</p>
+  <p>Text or call <a href="tel:+16282528644">Pedro at +1(628)252-8644</a></p>
+  <p style="margin-top:6px;">Pickup only &nbsp;·&nbsp; 1301 20th ST NW, Washington DC 20036 (Dupont Circle)</p>
+</footer>
+
+<script>
+  document.querySelectorAll('.carousel').forEach(carousel => {
+    const images = JSON.parse(carousel.dataset.images || '[]');
+    if (!images.length) return;
+    const multi = images.length > 1;
+
+    const track = document.createElement('div');
+    track.className = 'carousel-track';
+    images.forEach((src, i) => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = 'Product image ' + (i + 1);
+      img.loading = 'lazy';
+      track.appendChild(img);
+    });
+    carousel.appendChild(track);
+
+    const prev = document.createElement('button');
+    prev.className = 'carousel-btn prev' + (multi ? '' : ' hidden');
+    prev.innerHTML = '&#8249;';
+    const next = document.createElement('button');
+    next.className = 'carousel-btn next' + (multi ? '' : ' hidden');
+    next.innerHTML = '&#8250;';
+    carousel.appendChild(prev);
+    carousel.appendChild(next);
+
+    const dotsWrap = document.createElement('div');
+    dotsWrap.className = 'carousel-dots' + (multi ? '' : ' hidden');
+    const dots = images.map((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(d);
+      return d;
+    });
+    carousel.appendChild(dotsWrap);
+
+    let current = 0;
+    function goTo(idx) {
+      current = (idx + images.length) % images.length;
+      track.style.transform = `translateX(-${current * 100}%)`;
+      dots.forEach((d, i) => d.classList.toggle('active', i === current));
+    }
+
+    prev.addEventListener('click', () => goTo(current - 1));
+    next.addEventListener('click', () => goTo(current + 1));
+
+    let startX = 0;
+    carousel.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+    carousel.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) goTo(current + (dx < 0 ? 1 : -1));
+    });
+  });
+
+  function filter(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.card').forEach(card => {
+      card.classList.toggle('hidden', cat !== 'all' && card.dataset.cat !== cat);
+    });
+  }
+</script>
+</body>
+</html>
